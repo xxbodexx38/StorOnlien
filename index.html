@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BODA-STOR</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Tahoma', 'Arial', sans-serif;
+            background: #f8f9fa;
+        }
+        /* Header */
+        .header {
+            background: #e8eee8;;
+            color: white;
+            padding: 20px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .header-content {
+            max-width: 1200px;
+            margin: auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        .logo h1 {
+            font-size: 24px;
+            color: black;
+        }
+        .logo p {
+            font-size: 12px;
+            color: #ddd;
+        }
+        .cart-icon {
+            position: relative;
+            cursor: pointer;
+            background: #53e945;
+            padding: 10px 20px;
+            border-radius: 25px;
+            transition: 0.3s;
+        }
+        .cart-icon:hover {
+            background: #53e945;
+        }
+        .cart-count {
+            background: white;
+            color: #53e945;
+            border-radius: 50%;
+            padding: 2px 8px;
+            font-size: 12px;
+            margin-left: 5px;
+        }
+        /* المنتجات */
+        .products-section {
+            max-width: 1200px;
+            margin: 40px auto;
+            padding: 0 20px;
+        }
+        .products-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 25px;
+            margin-top: 30px;
+        }
+        .product-card {
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        .product-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+        }
+        .product-image {
+            width: 100%;
+            height: 280px;
+            object-fit: cover;
+            background: #f0f0f0;
+        }
+        .product-info {
+            padding: 20px;
+        }
+        .product-title {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+        .product-category {
+            color: #53e945;
+            font-size: 12px;
+            margin-bottom: 8px;
+        }
+        .product-price {
+            font-size: 22px;
+            color: #1a1a2e;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+        .product-price span {
+            font-size: 12px;
+            color: #666;
+        }
+        .product-sizes {
+            display: flex;
+            gap: 8px;
+            margin: 10px 0;
+            flex-wrap: wrap;
+        }
+        .size {
+            padding: 4px 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .size:hover, .size.selected {
+            background: #1a1a2e;
+            color: white;
+            border-color: #1a1a2e;
+        }
+        .add-to-cart {
+            width: 100%;
+            padding: 12px;
+            background: #53e945;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            margin-top: 15px;
+            transition: 0.3s;
+        }
+        .add-to-cart:hover {
+            background: #53e945;
+        }
+        /* سلة التسوق المنبثقة */
+        .cart-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+        .cart-modal.active {
+            display: flex;
+        }
+        .cart-content {
+            background: white;
+            width: 90%;
+            max-width: 500px;
+            max-height: 80vh;
+            border-radius: 20px;
+            padding: 20px;
+            overflow-y: auto;
+        }
+        .cart-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #eee;
+        }
+        .cart-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid #eee;
+        }
+        .cart-total {
+            font-size: 20px;
+            font-weight: bold;
+            margin: 20px 0;
+            text-align: left;
+        }
+        .checkout-btn {
+            width: 100%;
+            padding: 15px;
+            background: #1a1a2e;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 18px;
+            cursor: pointer;
+        }
+        .remove-item {
+            background: #53e945;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .admin-link {
+            background: #333;
+            color: white;
+            padding: 8px 15px;
+            text-decoration: none;
+            border-radius: 20px;
+            font-size: 14px;
+        }
+        .admin-link:hover {
+            background: #53e945;
+        }
+        @media (max-width: 768px) {
+            .products-grid {
+                grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+                gap: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="header-content">
+            <div class="logo">
+                <h1>👕 BODA STORE</h1>
+                <p> الي عندنا مش عند حد </p>
+            </div>
+            <div style="display: flex; gap: 15px; align-items: center;">
+                <a href="admin.html" class="admin-link">📦 إدارة المنتجات</a>
+                <a href="orders.html" class="admin-link">📋 الطلبات</a>
+                <div class="cart-icon" onclick="toggleCart()">
+                    🛒 السلة <span class="cart-count" id="cartCount">0</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="products-section">
+        <h2>🛍️ جميع المنتجات</h2>
+        <div class="products-grid" id="productsGrid"></div>
+    </div>
+
+    <!-- سلة التسوق -->
+    <div class="cart-modal" id="cartModal">
+        <div class="cart-content">
+            <div class="cart-header">
+                <h3>🛒 سلة التسوق</h3>
+                <button onclick="toggleCart()" style="background: none; border: none; font-size: 24px; cursor: pointer;">✖</button>
+            </div>
+            <div id="cartItems"></div>
+            <div class="cart-total" id="cartTotal">الإجمالي: 0 ج.م</div>
+            <button class="checkout-btn" onclick="checkout()">💳 إتمام الطلب</button>
+        </div>
+    </div>
+
+    <script>
+        // البيانات الأساسية
+        let products = [];
+        let cart = [];
+
+        // تحميل البيانات من localStorage
+        function loadData() {
+            const storedProducts = localStorage.getItem('products');
+            if (storedProducts) {
+                products = JSON.parse(storedProducts);
+            } else {
+                // منتجات افتراضية
+                products = [
+                    { id: 1, name: 'تيشرت قطني', category: 'رجالي', price: 250, image: 'https://via.placeholder.com/300x400?text=T-Shirt', sizes: ['S','M','L','XL'] },
+                    { id: 2, name: 'جينز كلاسيك', category: 'رجالي', price: 450, image: 'https://via.placeholder.com/300x400?text=Jeans', sizes: ['32','34','36','38'] },
+                    { id: 3, name: 'فستان سهرة', category: 'حريمي', price: 650, image: 'https://via.placeholder.com/300x400?text=Dress', sizes: ['S','M','L'] },
+                    { id: 4, name: 'هودي رياضي', category: 'رجالي', price: 350, image: 'https://via.placeholder.com/300x400?text=Hoodie', sizes: ['M','L','XL','XXL'] },
+                    { id: 5, name: 'بلوزة كاجوال', category: 'حريمي', price: 280, image: 'https://via.placeholder.com/300x400?text=Blouse', sizes: ['S','M','L'] },
+                    { id: 6, name: 'بنطلون كargo', category: 'رجالي', price: 380, image: 'https://via.placeholder.com/300x400?text=Cargo', sizes: ['30','32','34','36'] }
+                ];
+                saveProducts();
+            }
+
+            const storedCart = localStorage.getItem('cart');
+            if (storedCart) {
+                cart = JSON.parse(storedCart);
+            }
+            updateCartDisplay();
+        }
+
+        function saveProducts() {
+            localStorage.setItem('products', JSON.stringify(products));
+        }
+
+        function saveCart() {
+            localStorage.setItem('cart', JSON.stringify(cart));
+            updateCartDisplay();
+        }
+
+        function updateCartDisplay() {
+            const cartCount = cart.reduce((sum, item) => sum + item.quantity, 0);
+            document.getElementById('cartCount').innerText = cartCount;
+            
+            const cartItemsDiv = document.getElementById('cartItems');
+            if (cartItemsDiv) {
+                if (cart.length === 0) {
+                    cartItemsDiv.innerHTML = '<p style="text-align:center;">السلة فارغة</p>';
+                } else {
+                    cartItemsDiv.innerHTML = cart.map(item => `
+                        <div class="cart-item">
+                            <div>
+                                <strong>${item.name}</strong><br>
+                                ${item.size ? `مقاس: ${item.size}` : ''}<br>
+                                ${item.price} ج.م × ${item.quantity}
+                            </div>
+                            <div>
+                                <strong>${item.price * item.quantity} ج.م</strong>
+                                <button class="remove-item" onclick="removeFromCart(${item.id})">✖</button>
+                            </div>
+                        </div>
+                    `).join('');
+                }
+                const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+                document.getElementById('cartTotal').innerHTML = `الإجمالي: ${total} ج.م`;
+            }
+        }
+
+        function addToCart(product, size) {
+            const existingItem = cart.find(item => item.id === product.id && item.size === size);
+            if (existingItem) {
+                existingItem.quantity++;
+            } else {
+                cart.push({
+                    id: product.id,
+                    name: product.name,
+                    price: product.price,
+                    size: size,
+                    quantity: 1
+                });
+            }
+            saveCart();
+            alert(`✅ تم إضافة ${product.name} إلى السلة`);
+        }
+
+        function removeFromCart(productId) {
+            cart = cart.filter(item => item.id !== productId);
+            saveCart();
+            if (cart.length === 0) {
+                document.getElementById('cartModal').classList.remove('active');
+            }
+        }
+
+        function toggleCart() {
+            document.getElementById('cartModal').classList.toggle('active');
+        }
+
+        function checkout() {
+            if (cart.length === 0) {
+                alert('السلة فارغة! أضف منتجات أولاً');
+                return;
+            }
+
+            const customerName = prompt('📝 أدخل اسمك الكامل:');
+            if (!customerName) return;
+            
+            const customerPhone = prompt('📞 أدخل رقم الهاتف:');
+            if (!customerPhone) return;
+            
+            const address = prompt('📍 أدخل عنوان التوصيل:');
+            if (!address) return;
+
+            const order = {
+                id: Date.now(),
+                date: new Date().toLocaleString('ar-EG'),
+                customer: { name: customerName, phone: customerPhone, address: address },
+                items: [...cart],
+                total: cart.reduce((sum, item) => sum + (item.price * item.quantity), 0),
+                status: 'جديد'
+            };
+
+            // حفظ الطلب
+            const orders = JSON.parse(localStorage.getItem('orders') || '[]');
+            orders.push(order);
+            localStorage.setItem('orders', JSON.stringify(orders));
+
+            // تفريغ السلة
+            cart = [];
+            saveCart();
+            toggleCart();
+            
+            alert(`✅ تم استلام طلبك بنجاح!\nرقم الطلب: ${order.id}\nسنتواصل معك قريباً`);
+        }
+
+        function renderProducts() {
+            const grid = document.getElementById('productsGrid');
+            if (!grid) return;
+            
+            grid.innerHTML = products.map(product => `
+                <div class="product-card">
+                    <img class="product-image" src="${product.image}" alt="${product.name}">
+                    <div class="product-info">
+                        <div class="product-title">${product.name}</div>
+                        <div class="product-category">${product.category}</div>
+                        <div class="product-price">${product.price} <span>ج.م</span></div>
+                        <div class="product-sizes" id="sizes-${product.id}">
+                            ${product.sizes.map(size => `<span class="size" data-size="${size}" onclick="selectSize(${product.id}, '${size}')">${size}</span>`).join('')}
+                        </div>
+                        <button class="add-to-cart" onclick="addCurrentSizeToCart(${product.id})">🛒 أضف إلى السلة</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        let selectedSizes = {};
+
+        function selectSize(productId, size) {
+            selectedSizes[productId] = size;
+            // تحديث المظهر
+            document.querySelectorAll(`#sizes-${productId} .size`).forEach(el => {
+                el.classList.remove('selected');
+                if (el.getAttribute('data-size') === size) {
+                    el.classList.add('selected');
+                }
+            });
+        }
+
+        function addCurrentSizeToCart(productId) {
+            const product = products.find(p => p.id === productId);
+            const size = selectedSizes[productId];
+            if (!size) {
+                alert('الرجاء اختيار المقاس أولاً');
+                return;
+            }
+            addToCart(product, size);
+        }
+
+        // تهيئة الصفحة
+        loadData();
+        renderProducts();
+    </script>
+</body>
+</html>

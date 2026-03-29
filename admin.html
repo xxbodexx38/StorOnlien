@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>إدارة المنتجات</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Tahoma', sans-serif;
+            background: #f5f5f5;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1200px;
+            margin: auto;
+        }
+        .header {
+            background: #1a1a2e;
+            color: white;
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        .header a {
+            color: white;
+            text-decoration: none;
+            background: #53e945;
+            padding: 8px 20px;
+            border-radius: 20px;
+        }
+        .form-card {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input, select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+        }
+        button {
+            background: #53e945;
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:hover {
+            background: #6fe964;
+        }
+        .products-table {
+            background: white;
+            border-radius: 15px;
+            overflow-x: auto;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            padding: 12px;
+            text-align: right;
+            border-bottom: 1px solid #eee;
+        }
+        th {
+            background: #1a1a2e;
+            color: white;
+        }
+        .delete-btn {
+            background: #53e945;
+            padding: 5px 15px;
+            font-size: 12px;
+        }
+        .edit-btn {
+            background: #ffc107;
+            color: #000;
+            padding: 5px 15px;
+            font-size: 12px;
+            margin-left: 5px;
+        }
+        .sizes-input {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .size-tag {
+            background: #f0f0f0;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📦 إدارة المنتجات</h1>
+            <div>
+                <a href="index.html">🏠 الرئيسية</a>
+                <a href="orders.html" style="margin-right: 10px;">📋 الطلبات</a>
+            </div>
+        </div>
+
+        <div class="form-card">
+            <h2>➕ إضافة منتج جديد</h2>
+            <div class="form-group">
+                <label>اسم المنتج</label>
+                <input type="text" id="productName" placeholder="مثال: تيشرت قطني">
+            </div>
+            <div class="form-group">
+                <label>القسم</label>
+                <select id="productCategory">
+                    <option value="رجالي">رجالي</option>
+                    <option value="حريمي">حريمي</option>
+                    <option value="أطفال">أطفال</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>السعر (ج.م)</label>
+                <input type="number" id="productPrice" placeholder="مثال: 250">
+            </div>
+            <div class="form-group">
+                <label>رابط الصورة</label>
+                <input type="text" id="productImage" placeholder="https://example.com/image.jpg">
+            </div>
+            <div class="form-group">
+                <label>المقاسات (افصل بينها بفاصلة)</label>
+                <input type="text" id="productSizes" placeholder="مثال: S,M,L,XL">
+            </div>
+            <button onclick="addProduct()">➕ إضافة المنتج</button>
+        </div>
+
+        <div class="products-table">
+            <h2 style="padding: 20px;">📋 قائمة المنتجات</h2>
+            <table id="productsTable">
+                <thead>
+                    <tr>
+                        <th>الصورة</th>
+                        <th>الاسم</th>
+                        <th>القسم</th>
+                        <th>السعر</th>
+                        <th>المقاسات</th>
+                        <th>العمليات</th>
+                    </tr>
+                </thead>
+                <tbody id="productsList"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        let products = [];
+
+        function loadProducts() {
+            const stored = localStorage.getItem('products');
+            if (stored) {
+                products = JSON.parse(stored);
+            } else {
+                products = [];
+            }
+            renderProducts();
+        }
+
+        function saveProducts() {
+            localStorage.setItem('products', JSON.stringify(products));
+            renderProducts();
+        }
+
+        function renderProducts() {
+            const tbody = document.getElementById('productsList');
+            if (!tbody) return;
+            
+            if (products.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">لا توجد منتجات</td></tr>';
+                return;
+            }
+            
+            tbody.innerHTML = products.map(product => `
+                <tr>
+                    <td><img src="${product.image}" width="50" height="50" style="object-fit:cover; border-radius:5px;"></td>
+                    <td>${product.name}</td>
+                    <td>${product.category}</td>
+                    <td>${product.price} ج.م</td>
+                    <td>${product.sizes.join(', ')}</td>
+                    <td>
+                        <button class="edit-btn" onclick="editProduct(${product.id})">✏️ تعديل</button>
+                        <button class="delete-btn" onclick="deleteProduct(${product.id})">🗑️ حذف</button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function addProduct() {
+            const name = document.getElementById('productName').value;
+            const category = document.getElementById('productCategory').value;
+            const price = parseInt(document.getElementById('productPrice').value);
+            const image = document.getElementById('productImage').value;
+            const sizesInput = document.getElementById('productSizes').value;
+            
+            if (!name || !price || !image || !sizesInput) {
+                alert('الرجاء ملء جميع الحقول');
+                return;
+            }
+            
+            const sizes = sizesInput.split(',').map(s => s.trim()).filter(s => s);
+            
+            const newProduct = {
+                id: Date.now(),
+                name: name,
+                category: category,
+                price: price,
+                image: image,
+                sizes: sizes
+            };
+            
+            products.push(newProduct);
+            saveProducts();
+            
+            // تفريغ الحقول
+            document.getElementById('productName').value = '';
+            document.getElementById('productPrice').value = '';
+            document.getElementById('productImage').value = '';
+            document.getElementById('productSizes').value = '';
+            
+            alert('✅ تم إضافة المنتج بنجاح');
+        }
+
+        function deleteProduct(id) {
+            if (confirm('هل أنت متأكد من حذف هذا المنتج؟')) {
+                products = products.filter(p => p.id !== id);
+                saveProducts();
+                alert('✅ تم حذف المنتج');
+            }
+        }
+
+        function editProduct(id) {
+            const product = products.find(p => p.id === id);
+            if (!product) return;
+            
+            const newName = prompt('الاسم الجديد:', product.name);
+            if (newName) product.name = newName;
+            
+            const newPrice = prompt('السعر الجديد:', product.price);
+            if (newPrice) product.price = parseInt(newPrice);
+            
+            const newImage = prompt('رابط الصورة الجديد:', product.image);
+            if (newImage) product.image = newImage;
+            
+            const newSizes = prompt('المقاسات الجديدة (افصل بينها بفاصلة):', product.sizes.join(','));
+            if (newSizes) product.sizes = newSizes.split(',').map(s => s.trim());
+            
+            saveProducts();
+            alert('✅ تم التعديل بنجاح');
+        }
+
+        loadProducts();
+    </script>
+</body>
+</html>

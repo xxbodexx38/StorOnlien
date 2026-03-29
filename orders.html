@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>الطلبات - Fashion Store</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Tahoma', sans-serif;
+            background: #f5f5f5;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1200px;
+            margin: auto;
+        }
+        .header {
+            background: #1a1a2e;
+            color: white;
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        .header a {
+            color: white;
+            text-decoration: none;
+            background: #53e945;
+            padding: 8px 20px;
+            border-radius: 20px;
+        }
+        .order-card {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .order-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #eee;
+            margin-bottom: 15px;
+        }
+        .order-id {
+            font-size: 18px;
+            font-weight: bold;
+            color: #53e945;
+        }
+        .order-date {
+            color: #666;
+        }
+        .order-status {
+            background: #ffc107;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 14px;
+        }
+        .customer-info {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+        }
+        .order-items {
+            margin: 15px 0;
+        }
+        .order-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid #eee;
+        }
+        .order-total {
+            font-size: 20px;
+            font-weight: bold;
+            text-align: left;
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 2px solid #eee;
+        }
+        .status-update {
+            margin-top: 15px;
+        }
+        select {
+            padding: 8px;
+            border-radius: 8px;
+            margin-right: 10px;
+        }
+        .no-orders {
+            text-align: center;
+            padding: 50px;
+            background: white;
+            border-radius: 15px;
+        }
+        @media (max-width: 768px) {
+            .order-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📋 إدارة الطلبات</h1>
+            <div>
+                <a href="index.html">🏠 الرئيسية</a>
+                <a href="admin.html">📦 المنتجات</a>
+            </div>
+        </div>
+
+        <div id="ordersContainer"></div>
+    </div>
+
+    <script>
+        let orders = [];
+
+        function loadOrders() {
+            const stored = localStorage.getItem('orders');
+            if (stored) {
+                orders = JSON.parse(stored);
+            } else {
+                orders = [];
+            }
+            renderOrders();
+        }
+
+        function saveOrders() {
+            localStorage.setItem('orders', JSON.stringify(orders));
+            renderOrders();
+        }
+
+        function updateStatus(orderId, newStatus) {
+            const order = orders.find(o => o.id === orderId);
+            if (order) {
+                order.status = newStatus;
+                saveOrders();
+                alert('✅ تم تحديث حالة الطلب');
+            }
+        }
+
+        function deleteOrder(orderId) {
+            if (confirm('هل أنت متأكد من حذف هذا الطلب؟')) {
+                orders = orders.filter(o => o.id !== orderId);
+                saveOrders();
+                alert('✅ تم حذف الطلب');
+            }
+        }
+
+        function renderOrders() {
+            const container = document.getElementById('ordersContainer');
+            if (!container) return;
+            
+            if (orders.length === 0) {
+                container.innerHTML = '<div class="no-orders"><h3>📭 لا توجد طلبات حالياً</h3><p>عندما يقوم العملاء بالطلب ستظهر هنا</p></div>';
+                return;
+            }
+            
+            container.innerHTML = orders.map(order => `
+                <div class="order-card">
+                    <div class="order-header">
+                        <div>
+                            <span class="order-id">طلب #${order.id}</span>
+                            <span class="order-date">📅 ${order.date}</span>
+                        </div>
+                        <div>
+                            <span class="order-status">الحالة: ${getStatusText(order.status)}</span>
+                        </div>
+                    </div>
+                    
+                    <div class="customer-info">
+                        <h4>👤 معلومات العميل</h4>
+                        <p><strong>الاسم:</strong> ${order.customer.name}</p>
+                        <p><strong>الهاتف:</strong> ${order.customer.phone}</p>
+                        <p><strong>العنوان:</strong> ${order.customer.address}</p>
+                    </div>
+                    
+                    <div class="order-items">
+                        <h4>🛍️ المنتجات</h4>
+                        ${order.items.map(item => `
+                            <div class="order-item">
+                                <span>${item.name} ${item.size ? `(مقاس ${item.size})` : ''}</span>
+                                <span>${item.quantity} × ${item.price} ج.م = ${item.price * item.quantity} ج.م</span>
+                            </div>
+                        `).join('')}
+                    </div>
+                    
+                    <div class="order-total">
+                        الإجمالي: ${order.total} ج.م
+                    </div>
+                    
+                    <div class="status-update">
+                        <label>تغيير الحالة:</label>
+                        <select onchange="updateStatus(${order.id}, this.value)">
+                            <option value="جديد" ${order.status === 'جديد' ? 'selected' : ''}>جديد</option>
+                            <option value="قيد التجهيز" ${order.status === 'قيد التجهيز' ? 'selected' : ''}>قيد التجهيز</option>
+                            <option value="تم الشحن" ${order.status === 'تم الشحن' ? 'selected' : ''}>تم الشحن</option>
+                            <option value="تم التوصيل" ${order.status === 'تم التوصيل' ? 'selected' : ''}>تم التوصيل</option>
+                            <option value="ملغي" ${order.status === 'ملغي' ? 'selected' : ''}>ملغي</option>
+                        </select>
+                        <button onclick="deleteOrder(${order.id})" style="background: #dc3545; margin-right: 10px;">🗑️ حذف الطلب</button>
+                    </div>
+                </div>
+            `).reverse().join('');
+        }
+
+        function getStatusText(status) {
+            const statusMap = {
+                'جديد': '🆕 جديد',
+                'قيد التجهيز': '⚙️ قيد التجهيز',
+                'تم الشحن': '🚚 تم الشحن',
+                'تم التوصيل': '✅ تم التوصيل',
+                'ملغي': '❌ ملغي'
+            };
+            return statusMap[status] || status;
+        }
+
+        loadOrders();
+    </script>
+</body>
+</html>
